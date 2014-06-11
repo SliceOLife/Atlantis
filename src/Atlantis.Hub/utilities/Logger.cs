@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 
-namespace Atlantis.Common
+namespace Atlantis.Hub
 {
     public enum LogType
     {

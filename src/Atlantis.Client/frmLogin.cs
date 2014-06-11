@@ -9,7 +9,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Collections;
-using Atlantis.Common;
+using Atlantis.Hub;
 using System.IO;
 
 namespace AtlantisClient
@@ -37,7 +37,7 @@ namespace AtlantisClient
                 ChannelServices.RegisterChannel(chan, false);
 
                 // Create an instance of the remote object
-                objChatWin = new frmChatWin();
+                objChatWin = new frmChatWin(txtServerAdd.Text);
 
                 // Built connection string
                 logHandler.WriteLine(LogType.Debug, "Trying to load client.ini");
@@ -58,9 +58,9 @@ namespace AtlantisClient
                 var pubIP = new System.Net.WebClient().DownloadString("http://bot.whatismyipaddress.com");
                 try
                 {
-                    if (!objChatWin.remoteObj.JoinToChatRoom(txtName.Text, System.Net.IPAddress.Parse(pubIP)))
+                    if (!objChatWin.remoteObj.ConnectRoom(txtServerAdd.Text, txtName.Text, System.Net.IPAddress.Parse(pubIP)))
                     {
-                        MessageBox.Show(String.Format("A user with the name {0} is in that chatroom, or the chatroom doesn't exist."), txtName.Text);
+                        //MessageBox.Show(String.Format("A user with the name {0} is in that chatroom, or the chatroom doesn't exist."), txtName.Text);
                         ChannelServices.UnregisterChannel(chan);
                         chan = null;
                         objChatWin.Dispose();
@@ -75,7 +75,7 @@ namespace AtlantisClient
                     chan = null;
                     objChatWin.Dispose();
                 }
-                objChatWin.key = objChatWin.remoteObj.CurrentKeyNo();
+                objChatWin.key = objChatWin.remoteObj.CurrentRoomKeyNo(txtServerAdd.Text);
 
                 objChatWin.yourName = txtName.Text;
 

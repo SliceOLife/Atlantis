@@ -4,7 +4,7 @@ using System.IO;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
-using Atlantis.Common;
+using Atlantis.Hub;
 
 namespace Atlantis.Server
 {
@@ -39,6 +39,8 @@ namespace Atlantis.Server
 
                 foreach (var channelObj in channels)
                 {
+                    AtlantisObject obj = new AtlantisObject();
+                    obj.addRoom(channelObj.ToString());
                     RemotingConfiguration.RegisterWellKnownServiceType(typeof(AtlantisObject), channelObj, WellKnownObjectMode.Singleton);
                     logHandler.WriteLine(LogType.Info, String.Format("Opened up chatroom: {0}", channelObj));
                 }

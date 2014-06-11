@@ -2,77 +2,101 @@ using System;
 using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
-using System.Collections;
-using Atlantis.Common;
+using System.Collections.Generic;
 using System.Net;
+using System.Collections;
 
-namespace Atlantis.Common
+namespace Atlantis.Hub
 {
     /// <remarks>
     /// Sample object to demonstrate the use of .NET Remoting.
     /// </remarks>
     public class AtlantisObject : MarshalByRefObject
     {
+        Dictionary<string, Chatroom> chatroomStorage = new Dictionary<string, Chatroom>();
         Logger logHandler = new Logger("exec.log");
-        Hashtable messageStore = new Hashtable ();
 
-        Hashtable connectedClients = new Hashtable();
-        Hashtable clientStatuses = new Hashtable();
-        private int key = 0;
-        
-        public bool JoinToChatRoom(string name, IPAddress pubIP)
+        public bool addRoom(string chName)
         {
-            try
+            Chatroom chatRoom = new Chatroom();
+            chatroomStorage.Add(chName, chatRoom);
+
+            return true;
+        }
+        
+        public bool ConnectRoom(string roomName, string clientName, IPAddress publicIP)
+        {
+            if(chatroomStorage.ContainsKey(roomName))
             {
-                if (connectedClients.Contains(name))
+                Chatroom roomObject = new Chatroom();
+                chatroomStorage.TryGetValue(roomName, out roomObject);
+                var hasJoined = roomObject.addUser(clientName, publicIP);
+
+                if(hasJoined != true) {
+                    // User is in this room already.
                     return false;
+                }
                 else
                 {
-                    var nxtClient = connectedClients.Count + 1;
-                    connectedClients.Add(name, pubIP.ToString());
-                    clientStatuses.Add(name, "online");
-
-                    logHandler.WriteLine(LogType.Debug, String.Format("Client {0} connected with IP: {1}", name, pubIP.ToString()));
-                    SendInternalMessage(String.Format("{0} has joined", name));
+                    logHandler.WriteLine(LogType.Debug, String.Format("Client {0} connected with IP: {1}", clientName, publicIP.ToString()));
+                    SendInternalMessage(String.Format("{0} has joined {1}", clientName, roomName), roomName);
                     return true;
                 }
             }
-            catch (System.Runtime.Remoting.RemotingException ex)
+            else
             {
-                logHandler.WriteLine(LogType.Error, ex.Message);
+                // This room doesn't exist.
                 return false;
             }
         }
 
-        public void LeaveChatRoom(string name)
+        public void DisconnectRoom(string roomName, string clientName)
         {
-            connectedClients.Remove(name);
-            clientStatuses.Remove(name);
-            SendInternalMessage(String.Format("{0} has left", name));
-        }
-
-        public ArrayList GetOnlineUser()
-        {
-            // Build a temporary ArrayList to store users(including status)
-            ArrayList currentUsers = new ArrayList();
-            foreach(DictionaryEntry user in connectedClients)
+            if (chatroomStorage.ContainsKey(roomName))
             {
-                var name = user.Key;
-                var status = clientStatuses[name];
-                var nStatus = String.Format("{0}({1})", name, status);
+                Chatroom roomObject = new Chatroom();
+                chatroomStorage.TryGetValue(roomName, out roomObject);
 
-                currentUsers.Add(nStatus);
+                roomObject.LeaveChatRoom(clientName);
+                SendInternalMessage(String.Format("{0} has left room {1}", clientName, roomName), roomName);
             }
-            return currentUsers;
         }
 
-        public void SetUserStatus(string nick, string status)
+        public ArrayList getRoomUsers(string roomName)
+        {
+            if (chatroomStorage.ContainsKey(roomName))
+            {
+                Chatroom roomObject = new Chatroom();
+                chatroomStorage.TryGetValue(roomName, out roomObject);
+
+                ArrayList currentUsers = new ArrayList();
+                foreach(DictionaryEntry user in roomObject.connectedClients)
+                {
+                    var name = user.Key;
+                    var status = roomObject.clientStatuses[name];
+                    var nStatus = String.Format("{0}({1})", name, status);
+
+                    currentUsers.Add(nStatus);
+                }
+
+                return currentUsers;
+            }
+
+            return null;
+        }
+
+        public void SetUserStatus(string nick, string status, string roomName)
         {
             // We have to make sure status is either: online/busy/away/offline
             // TODO -- if set to offline, make sure user is invisible.
 
             // Make sure status isn't a duplicate of the former.
-            var oldStatus = clientStatuses[nick];
+
+            // Get the room
+            Chatroom roomObject = new Chatroom();
+            chatroomStorage.TryGetValue(roomName, out roomObject);
+            
+            var oldStatus = roomObject.clientStatuses[nick];
 
             if((string)oldStatus == status)
             {
@@ -82,51 +106,64 @@ namespace Atlantis.Common
             switch (status)
             {
                 case "online":
-                    clientStatuses[nick] = status;
-                    SendInternalMessage(String.Format("{0} is now {1}", nick, status));
+                    roomObject.clientStatuses[nick] = status;
+                    SendInternalMessage(String.Format("{0} is now {1}", nick, status), roomName);
                     break;
                 case "busy":
-                    clientStatuses[nick] = status;
-                    SendInternalMessage(String.Format("{0} is now {1}", nick, status));
+                    roomObject.clientStatuses[nick] = status;
+                    SendInternalMessage(String.Format("{0} is now {1}", nick, status), roomName);
                     break;
                 case "away":
-                    clientStatuses[nick] = status;
-                    SendInternalMessage(String.Format("{0} is now {1}", nick, status));
+                    roomObject.clientStatuses[nick] = status;
+                    SendInternalMessage(String.Format("{0} is now {1}", nick, status), roomName);
                     break;
                 case "offline":
-                    clientStatuses[nick] = status;
-                    SendInternalMessage(String.Format("{0} is now {1}", nick, status));
+                    roomObject.clientStatuses[nick] = status;
+                    SendInternalMessage(String.Format("{0} is now {1}", nick, status), roomName);
                     break;
                 default:
-                    clientStatuses[nick] = "online";
-                    SendInternalMessage(String.Format("{0} is now online", nick));
+                    roomObject.clientStatuses[nick] = "online";
+                    SendInternalMessage(String.Format("{0} is now online", nick), roomName);
                     break;
             }
         }
 
-        public int CurrentKeyNo()
+        public int CurrentRoomKeyNo(string roomName)
         {
-            return key;
+            Chatroom roomObject = new Chatroom();
+            chatroomStorage.TryGetValue(roomName, out roomObject);
+
+            return roomObject.CurrentKeyNo();
         }
 
-        private void SendInternalMessage(string message)
+        private void SendInternalMessage(string message, string roomName)
         {
-            logHandler.WriteLine(LogType.Info, message);
+            logHandler.WriteLine(LogType.Info, String.Format("{0): {1}", roomName, message));
 
-            messageStore.Add(++key, message);
+            Chatroom roomObject = new Chatroom();
+            chatroomStorage.TryGetValue(roomName, out roomObject);
+
+            roomObject.messageStore.Add(++roomObject.key, message);
         }
 
-        public void SendServerMessage(string message)
+        public void SendServerMessage(string message, string roomName)
         {
-            logHandler.WriteLine(LogType.Chat, message);
+            logHandler.WriteLine(LogType.Chat, String.Format("{0): {1}", roomName, message));
 
-            messageStore.Add(++key, message);
+            Chatroom roomObject = new Chatroom();
+            chatroomStorage.TryGetValue(roomName, out roomObject);
+
+            roomObject.messageStore.Add(++roomObject.key, message);
         }
 
-        public string retrieveMessage(int lastKey)
+        public string retrieveMessage(string roomName, int lastKey)
         {
-            if (key > lastKey)
-                return messageStore[lastKey + 1].ToString();
+            Chatroom roomObject = new Chatroom();
+            chatroomStorage.TryGetValue(roomName, out roomObject);
+
+            var room_c_key = roomObject.key;
+            if (room_c_key > lastKey)
+                return roomObject.messageStore[lastKey + 1].ToString();
             else
                 return "";
         }

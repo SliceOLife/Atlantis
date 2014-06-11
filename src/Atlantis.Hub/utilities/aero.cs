@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Atlantis.Common
+namespace Atlantis.Hub
 {
     public class aero
     {
