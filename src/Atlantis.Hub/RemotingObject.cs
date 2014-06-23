@@ -5,6 +5,7 @@ using System.Runtime.Remoting.Channels.Tcp;
 using System.Collections.Generic;
 using System.Net;
 using System.Collections;
+using System.Linq;
 
 namespace Atlantis.Hub
 {
@@ -13,61 +14,55 @@ namespace Atlantis.Hub
     /// </remarks>
     public class AtlantisObject : MarshalByRefObject
     {
-        Dictionary<string, Chatroom> chatroomStorage = new Dictionary<string, Chatroom>();
+        List<Chatroom> chatStorage = new List<Chatroom>();
         Logger logHandler = new Logger("exec.log");
 
         public bool addRoom(string chName)
         {
-            Chatroom chatRoom = new Chatroom();
-            chatroomStorage.Add(chName, chatRoom);
+            Chatroom chatRoom = new Chatroom(chName);
+            chatStorage.Add(chatRoom);
 
             return true;
         }
-        
+
+        public Chatroom returnRoom(string roomName)
+        {
+            var chatExists = from chatroom in chatStorage
+                             where chatroom.roomName == roomName
+                             select chatroom;
+            Chatroom roomObject = chatExists.FirstOrDefault();
+
+            return roomObject;
+        }
         public bool ConnectRoom(string roomName, string clientName, IPAddress publicIP)
         {
-            if(chatroomStorage.ContainsKey(roomName))
-            {
-                Chatroom roomObject = new Chatroom();
-                chatroomStorage.TryGetValue(roomName, out roomObject);
-                var hasJoined = roomObject.addUser(clientName, publicIP);
+            Chatroom roomObject = returnRoom(roomName);
+            var hasJoined = roomObject.addUser(clientName, publicIP);
 
-                if(hasJoined != true) {
-                    // User is in this room already.
-                    return false;
-                }
-                else
-                {
-                    logHandler.WriteLine(LogType.Debug, String.Format("Client {0} connected with IP: {1}", clientName, publicIP.ToString()));
-                    SendInternalMessage(String.Format("{0} has joined {1}", clientName, roomName), roomName);
-                    return true;
-                }
+            if (hasJoined != true)
+            {
+                // User is in this room already.
+                return false;
             }
             else
             {
-                // This room doesn't exist.
-                return false;
+                logHandler.WriteLine(LogType.Debug, String.Format("Client {0} connected with IP: {1}", clientName, publicIP.ToString()));
+                SendInternalMessage(String.Format("{0} has joined {1}", clientName, roomName), roomName);
+                return true;
             }
         }
 
         public void DisconnectRoom(string roomName, string clientName)
         {
-            if (chatroomStorage.ContainsKey(roomName))
-            {
-                Chatroom roomObject = new Chatroom();
-                chatroomStorage.TryGetValue(roomName, out roomObject);
+                Chatroom roomObject = returnRoom(roomName);
 
                 roomObject.LeaveChatRoom(clientName);
                 SendInternalMessage(String.Format("{0} has left room {1}", clientName, roomName), roomName);
-            }
         }
 
         public ArrayList getRoomUsers(string roomName)
         {
-            if (chatroomStorage.ContainsKey(roomName))
-            {
-                Chatroom roomObject = new Chatroom();
-                chatroomStorage.TryGetValue(roomName, out roomObject);
+            Chatroom roomObject = returnRoom(roomName);
 
                 ArrayList currentUsers = new ArrayList();
                 foreach(DictionaryEntry user in roomObject.connectedClients)
@@ -80,9 +75,6 @@ namespace Atlantis.Hub
                 }
 
                 return currentUsers;
-            }
-
-            return null;
         }
 
         public void SetUserStatus(string nick, string status, string roomName)
@@ -93,8 +85,7 @@ namespace Atlantis.Hub
             // Make sure status isn't a duplicate of the former.
 
             // Get the room
-            Chatroom roomObject = new Chatroom();
-            chatroomStorage.TryGetValue(roomName, out roomObject);
+            Chatroom roomObject = returnRoom(roomName);
             
             var oldStatus = roomObject.clientStatuses[nick];
 
@@ -130,8 +121,7 @@ namespace Atlantis.Hub
 
         public int CurrentRoomKeyNo(string roomName)
         {
-            Chatroom roomObject = new Chatroom();
-            chatroomStorage.TryGetValue(roomName, out roomObject);
+            Chatroom roomObject = returnRoom(roomName);
 
             return roomObject.CurrentKeyNo();
         }
@@ -140,8 +130,7 @@ namespace Atlantis.Hub
         {
             logHandler.WriteLine(LogType.Info, String.Format("{0): {1}", roomName, message));
 
-            Chatroom roomObject = new Chatroom();
-            chatroomStorage.TryGetValue(roomName, out roomObject);
+            Chatroom roomObject = returnRoom(roomName);
 
             roomObject.messageStore.Add(++roomObject.key, message);
         }
@@ -150,16 +139,14 @@ namespace Atlantis.Hub
         {
             logHandler.WriteLine(LogType.Chat, String.Format("{0): {1}", roomName, message));
 
-            Chatroom roomObject = new Chatroom();
-            chatroomStorage.TryGetValue(roomName, out roomObject);
+            Chatroom roomObject = returnRoom(roomName);
 
             roomObject.messageStore.Add(++roomObject.key, message);
         }
 
         public string retrieveMessage(string roomName, int lastKey)
         {
-            Chatroom roomObject = new Chatroom();
-            chatroomStorage.TryGetValue(roomName, out roomObject);
+            Chatroom roomObject = returnRoom(roomName);
 
             var room_c_key = roomObject.key;
             if (room_c_key > lastKey)

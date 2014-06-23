@@ -15,10 +15,16 @@ namespace Atlantis.Hub
     {
         Logger logHandler = new Logger("exec.log");
         internal Hashtable messageStore = new Hashtable();
+        public string roomName;
 
         internal Hashtable connectedClients = new Hashtable();
         internal Hashtable clientStatuses = new Hashtable();
         internal int key = 0;
+
+        public Chatroom(string chanName)
+        {
+            roomName = chanName;
+        }
 
         internal bool addUser(string clientName, IPAddress pubIP)
         {
