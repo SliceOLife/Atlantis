@@ -43,9 +43,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="aero.cs" />
-    <Compile Include="IniFile.cs" />
-    <Compile Include="Logger.cs" />
+    <Compile Include="Chatroom.cs" />
+    <Compile Include="utilities\aero.cs" />
+    <Compile Include="utilities\IniFile.cs" />
+    <Compile Include="utilities\Logger.cs" />
     <Compile Include="RemotingObject.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

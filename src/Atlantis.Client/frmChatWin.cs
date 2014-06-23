@@ -9,7 +9,7 @@ using System.Runtime.Remoting;
 using System.Runtime.Remoting.Channels;
 using System.Runtime.Remoting.Channels.Tcp;
 using System.Collections;
-using Atlantis.Common;
+using Atlantis.Hub;
 
 namespace AtlantisClient
 {
@@ -18,10 +18,12 @@ namespace AtlantisClient
         internal AtlantisObject remoteObj;
         internal int key = 0;
         internal string yourName;
+        internal string currentRoom;
         ArrayList alOnlineUser = new ArrayList();
 
-        public frmChatWin()
+        public frmChatWin(string room)
         {
+            currentRoom = room;
             InitializeComponent();
         }
 
@@ -35,7 +37,7 @@ namespace AtlantisClient
         {
             if (remoteObj != null)
             {
-                string tempStr = remoteObj.retrieveMessage(key);
+                string tempStr = remoteObj.retrieveMessage(currentRoom, key);
                 if (tempStr.Trim().Length > 0)
                 {
                     key++;
@@ -47,7 +49,7 @@ namespace AtlantisClient
 
                 //if (skipCounter > 3)
                 {
-                    ArrayList onlineUser = remoteObj.GetOnlineUser();
+                    ArrayList onlineUser = remoteObj.getRoomUsers(currentRoom);
                     lstOnlineUser.DataSource = onlineUser;
                     skipCounter = 0;
 
@@ -71,7 +73,7 @@ namespace AtlantisClient
 
             if (remoteObj != null && txtChatHere.Text.Trim().Length>0)
             {
-                remoteObj.SendServerMessage(String.Format("{0} > {1}", yourName, txtChatHere.Text));
+                remoteObj.SendServerMessage(String.Format("{0} > {1}", yourName, txtChatHere.Text), currentRoom);
                 txtChatHere.Text = "";
             }
         }
@@ -82,7 +84,7 @@ namespace AtlantisClient
             {
                 NotificationWindow.PopupNotifier pn = new NotificationWindow.PopupNotifier();
                 pn.BodyColor = Color.Gray;
-                pn.BorderColor = Atlantis.Common.aero.AeroColor();
+                pn.BorderColor = Atlantis.Hub.aero.AeroColor();
                 pn.TitleText = title;
                 pn.ContentText = message;
                 pn.Popup();
@@ -106,29 +108,29 @@ namespace AtlantisClient
 
         private void onlineToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            remoteObj.SetUserStatus(yourName, "online");
+            remoteObj.SetUserStatus(yourName, "online", currentRoom);
         }
 
         private void awayToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            remoteObj.SetUserStatus(yourName, "away");
+            remoteObj.SetUserStatus(yourName, "away", currentRoom);
         }
 
         private void busyToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            remoteObj.SetUserStatus(yourName, "busy");
+            remoteObj.SetUserStatus(yourName, "busy", currentRoom);
         }
 
         private void offlineToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            remoteObj.SetUserStatus(yourName, "offline");
+            remoteObj.SetUserStatus(yourName, "offline", currentRoom);
         }
 
         private void frmChatWin_FormClosing(object sender, FormClosingEventArgs e)
         {
             if (remoteObj != null)
             {
-                remoteObj.LeaveChatRoom(yourName);
+                remoteObj.DisconnectRoom(currentRoom, yourName);
                 txtChatHere.Text = "";
             }
             Application.Exit();
