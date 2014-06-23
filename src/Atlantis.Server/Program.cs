@@ -15,7 +15,7 @@ namespace Atlantis.Server
         static Logger logHandler = new Logger("exec.log");
         static void Main(string[] args)
         {
-            Console.Title = "Atlantis.Server -- Sprint #3";
+            Console.Title = "Atlantis.Server";
 
             // Check if our server.ini exists
             // TODO, wrap ini handling into a safer method, exceptionsss.
