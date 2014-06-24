@@ -72,13 +72,18 @@ namespace Atlantis.Modern.Content
             AppearanceManager.Current.PropertyChanged += OnAppearanceManagerPropertyChanged;
         }
 
+        public static System.Windows.Media.Color ToMediaColor(System.Drawing.Color clr)
+        {
+            return System.Windows.Media.Color.FromArgb(clr.A, clr.R, clr.G, clr.B);
+        }
+
         private void SyncThemeAndColor()
         {
             // synchronizes the selected viewmodel theme with the actual theme used by the appearance manager.
             this.SelectedTheme = this.themes.FirstOrDefault(l => l.Source.Equals(AppearanceManager.Current.ThemeSource));
 
             // and make sure accent color is up-to-date
-            this.SelectedAccentColor = AppearanceManager.Current.AccentColor;
+            this.SelectedAccentColor = ToMediaColor(Atlantis.Hub.aero.AeroColor());
         }
 
         private void OnAppearanceManagerPropertyChanged(object sender, PropertyChangedEventArgs e)

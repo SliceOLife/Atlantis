@@ -25,7 +25,10 @@ namespace Atlantis.Server
             if (!File.Exists(mainPath))
             {
                 logHandler.WriteLine(LogType.Error, "server.ini not found");
-                Environment.Exit(0);
+                logHandler.WriteLine(LogType.Info, "creating it now with default values");
+                IniFile iniCreator = new IniFile(mainPath);
+                iniCreator.Write("port", "4296", "server");
+                iniCreator.Write("channels", "default", "server");
             }
 
             IniFile iniHandler = new IniFile(mainPath);
@@ -36,10 +39,10 @@ namespace Atlantis.Server
             {
                 channel = new TcpChannel(port);
                 ChannelServices.RegisterChannel(channel, false);
+                AtlantisObject obj = new AtlantisObject();
 
                 foreach (var channelObj in channels)
                 {
-                    AtlantisObject obj = new AtlantisObject();
                     obj.addRoom(channelObj.ToString());
                     RemotingConfiguration.RegisterWellKnownServiceType(typeof(AtlantisObject), channelObj, WellKnownObjectMode.Singleton);
                     logHandler.WriteLine(LogType.Info, String.Format("Opened up chatroom: {0}", channelObj));

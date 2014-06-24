@@ -14,15 +14,13 @@ namespace Atlantis.Hub
     /// </remarks>
     public class AtlantisObject : MarshalByRefObject
     {
-        List<Chatroom> chatStorage = new List<Chatroom>();
+        static List<Chatroom> chatStorage = new List<Chatroom>();
         Logger logHandler = new Logger("exec.log");
 
-        public bool addRoom(string chName)
+        public void addRoom(string chName)
         {
             Chatroom chatRoom = new Chatroom(chName);
             chatStorage.Add(chatRoom);
-
-            return true;
         }
 
         public Chatroom returnRoom(string roomName)
@@ -37,18 +35,25 @@ namespace Atlantis.Hub
         public bool ConnectRoom(string roomName, string clientName, IPAddress publicIP)
         {
             Chatroom roomObject = returnRoom(roomName);
-            var hasJoined = roomObject.addUser(clientName, publicIP);
-
-            if (hasJoined != true)
+            if (roomObject != null)
             {
-                // User is in this room already.
-                return false;
+                var hasJoined = roomObject.addUser(clientName, publicIP);
+
+                if (hasJoined != true)
+                {
+                    // User is in this room already.
+                    return false;
+                }
+                else
+                {
+                    logHandler.WriteLine(LogType.Debug, String.Format("Client {0} connected with IP: {1}", clientName, publicIP.ToString()));
+                    SendInternalMessage(String.Format("{0} has joined {1}", clientName, roomName), roomName);
+                    return true;
+                }
             }
             else
             {
-                logHandler.WriteLine(LogType.Debug, String.Format("Client {0} connected with IP: {1}", clientName, publicIP.ToString()));
-                SendInternalMessage(String.Format("{0} has joined {1}", clientName, roomName), roomName);
-                return true;
+                return false;
             }
         }
 
@@ -128,7 +133,7 @@ namespace Atlantis.Hub
 
         private void SendInternalMessage(string message, string roomName)
         {
-            logHandler.WriteLine(LogType.Info, String.Format("{0): {1}", roomName, message));
+            logHandler.WriteLine(LogType.Info, String.Format("{0}", message));
 
             Chatroom roomObject = returnRoom(roomName);
 
@@ -137,7 +142,7 @@ namespace Atlantis.Hub
 
         public void SendServerMessage(string message, string roomName)
         {
-            logHandler.WriteLine(LogType.Chat, String.Format("{0): {1}", roomName, message));
+            logHandler.WriteLine(LogType.Chat, String.Format("{0}", message));
 
             Chatroom roomObject = returnRoom(roomName);
 
