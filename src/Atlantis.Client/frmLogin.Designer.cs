@@ -38,7 +38,7 @@ namespace AtlantisClient
             // txtName
             // 
             this.txtName.Location = new System.Drawing.Point(224, 58);
-            this.txtName.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.txtName.Margin = new System.Windows.Forms.Padding(6);
             this.txtName.Name = "txtName";
             this.txtName.Size = new System.Drawing.Size(430, 31);
             this.txtName.TabIndex = 11;
@@ -49,14 +49,14 @@ namespace AtlantisClient
             this.label3.Location = new System.Drawing.Point(54, 63);
             this.label3.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(130, 26);
+            this.label3.Size = new System.Drawing.Size(126, 25);
             this.label3.TabIndex = 10;
             this.label3.Text = "Your Name:";
             // 
             // btnJoin
             // 
             this.btnJoin.Location = new System.Drawing.Point(670, 54);
-            this.btnJoin.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.btnJoin.Margin = new System.Windows.Forms.Padding(6);
             this.btnJoin.Name = "btnJoin";
             this.btnJoin.Size = new System.Drawing.Size(150, 44);
             this.btnJoin.TabIndex = 12;
@@ -70,14 +70,14 @@ namespace AtlantisClient
             this.label1.Location = new System.Drawing.Point(54, 136);
             this.label1.Margin = new System.Windows.Forms.Padding(6, 0, 6, 0);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(71, 26);
+            this.label1.Size = new System.Drawing.Size(68, 25);
             this.label1.TabIndex = 14;
             this.label1.Text = "Room";
             // 
             // txtServerAdd
             // 
             this.txtServerAdd.Location = new System.Drawing.Point(224, 131);
-            this.txtServerAdd.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.txtServerAdd.Margin = new System.Windows.Forms.Padding(6);
             this.txtServerAdd.Name = "txtServerAdd";
             this.txtServerAdd.Size = new System.Drawing.Size(592, 31);
             this.txtServerAdd.TabIndex = 13;
@@ -94,7 +94,7 @@ namespace AtlantisClient
             this.Controls.Add(this.btnJoin);
             this.Controls.Add(this.txtName);
             this.Controls.Add(this.label3);
-            this.Margin = new System.Windows.Forms.Padding(6, 6, 6, 6);
+            this.Margin = new System.Windows.Forms.Padding(6);
             this.Name = "frmLogin";
             this.Text = "Entering Limbo";
             this.ResumeLayout(false);

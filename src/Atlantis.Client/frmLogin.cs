@@ -25,10 +25,16 @@ namespace AtlantisClient
             InitializeComponent();
         }
 
+        // Event handler for the join button
         private void btnJoin_Click(object sender, EventArgs e)
         {
             JoinToChatRoom();
         }
+
+        /// <summary>
+        /// Loads the users configuration file, and tries to setup a connection to the remote server and chatroom.
+        /// it then initializes the main chat window.
+        /// </summary>
         private void JoinToChatRoom()
         {
             if (chan == null && txtName.Text.Trim().Length != 0)
@@ -85,5 +91,6 @@ namespace AtlantisClient
 
             }
         }
+
     }
 }

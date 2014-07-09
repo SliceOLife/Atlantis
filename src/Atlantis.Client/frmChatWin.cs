@@ -27,12 +27,17 @@ namespace AtlantisClient
             InitializeComponent();
         }
 
+        // Event handler for message sending
         private void btnSend_Click(object sender, EventArgs e)
         {
             SendMessage();
         }
 
-        int skipCounter = 4;
+        /// <summary>
+        /// Timer that retrieves new server messages every few seconds.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void timer1_Tick(object sender, EventArgs e)
         {
             if (remoteObj != null)
@@ -47,11 +52,9 @@ namespace AtlantisClient
                     txtAllChat.ScrollToCaret();
                 }
 
-                //if (skipCounter > 3)
                 {
                     ArrayList onlineUser = remoteObj.getRoomUsers(currentRoom);
                     lstOnlineUser.DataSource = onlineUser;
-                    skipCounter = 0;
 
                     if (onlineUser.Count < 2)
                     {
@@ -64,10 +67,12 @@ namespace AtlantisClient
                         txtChatHere.Enabled = true;
                     }
                 }
-                //else
-                  //  skipCounter++;
             }
         }        
+
+        /// <summary>
+        /// Sends the users message over the remote object to the server.
+        /// </summary>
         private void SendMessage()
         {
 
@@ -78,19 +83,26 @@ namespace AtlantisClient
             }
         }
 
+        /// <summary>
+        /// Shows a notification to the user in the lower right corner
+        /// </summary>
+        /// <param name="title">Title of given notification</param>
+        /// <param name="message">Message of given notification</param>
         private void LaunchNotification(string title, string message)
         {
             if (!message.Contains("now") && !message.Contains("joined") && !message.Contains("left") && !message.Contains(yourName))
             {
-                NotificationWindow.PopupNotifier pn = new NotificationWindow.PopupNotifier();
-                pn.BodyColor = Color.Gray;
-                pn.BorderColor = Atlantis.Hub.aero.AeroColor();
-                pn.TitleText = title;
-                pn.ContentText = message;
-                pn.Popup();
+                //NotificationWindow.PopupNotifier pn = new NotificationWindow.PopupNotifier();
+                //pn.BodyColor = Color.Gray;
+                //pn.BorderColor = Atlantis.Hub.aero.AeroColor();
+                //pn.TitleText = title;
+                //pn.ContentText = message;
+                //pn.Popup();
             }
         }
 
+
+        // Some simple event handlers below for catching link clicks, focusing textboxes, etc.
         private void txtAllChat_LinkClicked_1(object sender, LinkClickedEventArgs e)
         {
             System.Diagnostics.Process.Start(e.LinkText);

@@ -8,9 +8,6 @@ using System.Net;
 
 namespace Atlantis.Hub
 {
-    /// <remarks>
-    /// Sample object to demonstrate the use of .NET Remoting.
-    /// </remarks>
     public class Chatroom
     {
         Logger logHandler = new Logger("exec.log");
@@ -26,6 +23,12 @@ namespace Atlantis.Hub
             roomName = chanName;
         }
 
+        /// <summary>
+        /// Adds a new user to this chatroom's active user list.
+        /// </summary>
+        /// <param name="clientName">Name of the new user</param>
+        /// <param name="pubIP">The new user's public-facing IP address</param>
+        /// <returns>false if a user with that name is already in here, otherwise true.</returns>
         internal bool addUser(string clientName, IPAddress pubIP)
         {
             if(connectedClients.Contains(clientName))
@@ -42,12 +45,20 @@ namespace Atlantis.Hub
             }
         }
 
+        /// <summary>
+        /// Removes given user from this chatroom's user list(disconnect)
+        /// </summary>
+        /// <param name="name">The given user's name</param>
         public void LeaveChatRoom(string name)
         {
             connectedClients.Remove(name);
             clientStatuses.Remove(name);
         }
 
+        /// <summary>
+        /// Builds an ArrayList of current chatroom users and their accompanying status.
+        /// </summary>
+        /// <returns>Userlist of users.</returns>
         public ArrayList GetOnlineUser()
         {
             // Build a temporary ArrayList to store users(including status)
@@ -63,12 +74,17 @@ namespace Atlantis.Hub
             return currentUsers;
         }
 
+        // Returns the last given key for keeping up which messages we sent/got last.
         public int CurrentKeyNo()
         {
             return key;
         }
 
-
+        /// <summary>
+        /// Method for retrieving the latest message from this chatroom
+        /// </summary>
+        /// <param name="lastKey">The key for the last message that was received. So we don't get older messages.</param>
+        /// <returns></returns>
         public string retrieveMessage(int lastKey)
         {
             if (key > lastKey)

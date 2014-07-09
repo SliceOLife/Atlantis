@@ -18,7 +18,7 @@ namespace Atlantis.Server
             Console.Title = "Atlantis.Server";
 
             // Check if our server.ini exists
-            // TODO, wrap ini handling into a safer method, exceptionsss.
+            // TODO, wrap ini handling into a safer method, exceptions.
             logHandler.WriteLine(LogType.Debug, "Trying to load server.ini");
             var mainPath = @"server.ini";
 
@@ -41,6 +41,7 @@ namespace Atlantis.Server
                 ChannelServices.RegisterChannel(channel, false);
                 AtlantisObject obj = new AtlantisObject();
 
+                // Open up a new chatroom for each one defined in the configuration file.
                 foreach (var channelObj in channels)
                 {
                     obj.addRoom(channelObj.ToString());
@@ -56,6 +57,7 @@ namespace Atlantis.Server
             }
         }
 
+        // Cleanly exit by unregistering all chatrooms before killing off the server process.
         static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
             if (channel != null)
